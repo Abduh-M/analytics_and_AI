@@ -3,55 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Damage Detection</title>
-</head>
-<body>
-    <h1>Car Damage Detection</h1>
-    <video id="video" width="640" height="480" autoplay></video>
-    <button id="capture-btn">Capture</button>
-    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureBtn = document.getElementById('capture-btn');
-        const ctx = canvas.getContext('2d');
-
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.error('Error accessing the camera:', err);
-            });
-
-        captureBtn.addEventListener('click', () => {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imgData = canvas.toDataURL();
-            fetch('/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `image=${encodeURIComponent(imgData)}`
-            })
-            .then(response => response.text())
-            .then(prediction => {
-                alert(`Predicted Class: ${prediction}`);
-            })
-            .catch(err => {
-                console.error('Prediction error:', err);
-            });
-        });
-    </script>
-</body>
-</html> -->
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Car Damage Detection</title>
 </head>
 <body>
@@ -100,5 +51,59 @@
         });
     </script>
 </body>
-</html>
+</html> -->
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Car Damage Detection</title>
+</head>
+<body>
+    <h1>Real-Time Car Damage Detection</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+    <div id="prediction-result"></div>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const predictionResult = document.getElementById('prediction-result');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Error accessing the camera:', err);
+            });
+
+        function sendFrame() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = canvas.toDataURL('image/jpeg');
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `image=${encodeURIComponent(imgData)}`
+            })
+            .then(response => response.text())
+            .then(prediction => {
+                predictionResult.innerText = `Predicted Class: ${prediction}`;
+                setTimeout(sendFrame, 1000); // Adjust the interval as needed
+            })
+            .catch(err => {
+                console.error('Prediction error:', err);
+                setTimeout(sendFrame, 1000); // Retry after a short delay
+            });
+        }
+
+        video.addEventListener('playing', () => {
+            sendFrame();
+        });
+    </script>
+</body>
+</html>
