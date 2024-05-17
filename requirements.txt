@@ -4,3 +4,4 @@ numpy
 tensorflow-cpu
 setuptools
 six
+gunicorn
