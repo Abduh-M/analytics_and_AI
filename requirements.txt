@@ -1,6 +1,4 @@
 Flask==2.0.3
-opencv-python-headless
-numpy~=1.21.0
-tensorflow==2.9.1
-setuptools
-six
+opencv-python-headless==4.5.5.64
+numpy==1.21.0
+tensorflow==2.8.0
